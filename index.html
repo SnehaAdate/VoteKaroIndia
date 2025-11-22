@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Government of India - VoteKaro India</title>
+    <link rel="manifest" href="manifest.json">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+        }
+
+        .ashoka-chakra-svg {
+            width: 24px;
+            height: 24px;
+            stroke: currentColor;
+            stroke-width: 2;
+        }
+        .voter-info-container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .party-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .party-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+        .party-card.selected {
+            border: 3px solid #1d4ed8;
+            background-color: #e0f2fe;
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(0.9); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(0.9); opacity: 0.8; }
+        }
+        .animate-pulse-ring {
+            animation: pulse-ring 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+        }
+        @keyframes pulse-fingerprint {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(66, 153, 225, 0.4); }
+            50% { box-shadow: 0 0 0 15px rgba(66, 153, 225, 0); }
+        }
+        .animate-pulse-fingerprint {
+            animation: pulse-fingerprint 1.5s infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center p-4 sm:p-8">
+
+    <div id="app-container" class="w-full max-w-lg bg-white rounded-xl shadow-2xl overflow-hidden">
+        
+        <header class="bg-gradient-to-r from-blue-700 to-indigo-800 p-4 shadow-lg text-white flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <svg class="ashoka-chakra-svg w-8 h-8 text-white fill-current" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" stroke-width="5"/>
+                    <circle cx="50" cy="50" r="10" fill="currentColor"/>
+                    <g id="spokes">
+                        <script>
+                            const spokes = 24;
+                            const spokeGroup = document.getElementById('spokes');
+                            for (let i = 0; i < spokes; i++) {
+                                const angle = (360 / spokes) * i;
+                                const spoke = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                                spoke.setAttribute('x1', '50');
+                                spoke.setAttribute('y1', '50');
+                                spoke.setAttribute('x2', '50');
+                                spoke.setAttribute('y2', '5');
+                                spoke.setAttribute('stroke', 'currentColor');
+                                spoke.setAttribute('stroke-width', '2');
+                                spoke.setAttribute('transform', `rotate(${angle}, 50, 50)`);
+                                spokeGroup.appendChild(spoke);
+                            }
+                        </script>
+                    </g>
+                </svg>
+                <h1 class="text-xl font-bold tracking-wider">Government of India</h1>
+            </div>
+            <p class="text-sm font-light italic">#VoteKaroIndia</p>
+        </header>
+
+        <main id="content-area" class="p-6 sm:p-8 space-y-6">
+            
+            <section id="page-1-welcome" data-page="1" class="page-content hidden text-center">
+                <div class="h-64 flex flex-col justify-center items-center bg-yellow-50 rounded-lg p-6 shadow-inner">
+                    <p class="text-4xl font-extrabold text-blue-800 mb-4">Hello, Welcome! 👋</p>
+                    <p class="text-lg text-gray-700">Welcome to the Online Voting System of India. Your voice matters.</p>
+                </div>
+                <button onclick="app.goToPage(2)" class="mt-8 w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition duration-300 shadow-md">
+                    Proceed to Registration
+                </button>
+            </section>
+
+            <section id="page-2-auth" data-page="2" class="page-content hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Authentication</h2>
+
+                <div id="auth-options" class="space-y-4">
+                    <button onclick="app.showAuthForm('signup')" class="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition duration-300 shadow-lg">
+                        Sign Up (New Voter)
+                    </button>
+                    <button onclick="app.showAuthForm('login')" class="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition duration-300 shadow-lg">
+                        Login (Existing Voter)
+                    </button>
+                </div>
+
+                <form id="signup-form" class="space-y-4 hidden mt-6">
+                    <h3 class="text-xl font-bold text-gray-800 text-center">New Voter Registration</h3>
+                    <div class="space-y-2">
+                        <label for="signup-voter-name" class="block text-sm font-medium text-gray-700">Full Name</label>
+                        <input type="text" id="signup-voter-name" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Enter your full name">
+                    </div>
+                    <div class="space-y-2">
+                        <label for="signup-voter-id" class="block text-sm font-medium text-gray-700">Voter ID</label>
+                        <input type="text" id="signup-voter-id" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., ABC1234567">
+                    </div>
+                    <div class="space-y-2">
+                        <label for="signup-voter-aadhar" class="block text-sm font-medium text-gray-700">Aadhar Number (12 digits)</label>
+                        <input type="text" id="signup-voter-aadhar" required maxlength="12" pattern="\d{12}" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="XXXX XXXX XXXX">
+                    </div>
+                    <div class="space-y-2">
+                        <label for="signup-voter-phone" class="block text-sm font-medium text-gray-700">Phone Number (10 digits)</label>
+                        <input type="tel" id="signup-voter-phone" required maxlength="10" pattern="\d{10}" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="XXXXXXXXXX">
+                    </div>
+                    <div class="space-y-2">
+                        <label for="signup-voter-age" class="block text-sm font-medium text-gray-700">Age</label>
+                        <input type="number" id="signup-voter-age" required min="18" max="120" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Must be 18+">
+                    </div>
+                    <p id="signup-otp-message" class="text-sm text-green-600 font-medium hidden">✅ Registration successful! Generating receipt...</p>
+                    <button type="button" onclick="app.simulateSignup()" class="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition duration-300 shadow-lg">
+                        Register & Get Receipt
+                    </button>
+                    <button type="button" onclick="app.showAuthForm('none')" class="w-full text-gray-600 py-2 rounded-xl font-semibold hover:bg-gray-50 transition duration-300">
+                        Back
+                    </button>
+                </form>
+
+                <form id="login-form" class="space-y-4 hidden mt-6">
+                    <h3 class="text-xl font-bold text-gray-800 text-center">Existing Voter Login</h3>
+                    <div class="space-y-2">
+                        <label for="login-voter-aadhar" class="block text-sm font-medium text-gray-700">Aadhar Number (12 digits)</label>
+                        <input type="text" id="login-voter-aadhar" required maxlength="12" pattern="\d{12}" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="XXXX XXXX XXXX">
+                    </div>
+                    <div id="otp-section" class="space-y-2 hidden">
+                        <label for="login-otp" class="block text-sm font-medium text-gray-700">Enter OTP</label>
+                        <input type="text" id="login-otp" required maxlength="6" pattern="\d{6}" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Enter 6-digit OTP">
+                        <p id="login-otp-message" class="text-sm text-blue-600 font-medium hidden text-center">Simulated OTP: 123456</p>
+                    </div>
+                    <button type="button" id="get-otp-button" onclick="app.simulateLogin()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition duration-300 shadow-lg">
+                        Get OTP
+                    </button>
+                    <button type="button" id="verify-otp-button" onclick="app.verifyOtp()" class="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition duration-300 shadow-lg hidden">
+                        Verify OTP
+                    </button>
+                    <button type="button" onclick="app.showAuthForm('none')" class="w-full text-gray-600 py-2 rounded-xl font-semibold hover:bg-gray-50 transition duration-300">
+                        Back
+                    </button>
+                </form>
+
+                <button type="button" onclick="app.goToPage(1)" class="mt-8 w-full text-blue-600 py-2 rounded-xl font-semibold hover:bg-blue-50 transition duration-300">
+                    Back to Welcome
+                </button>
+            </section>
+            
+            <section id="page-3-receipt" data-page="3" class="page-content hidden text-center">
+                <div class="bg-gray-100 p-8 rounded-xl shadow-lg border-2 border-dashed border-gray-300">
+                    <svg class="w-16 h-16 text-blue-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    <h2 class="text-3xl font-extrabold text-gray-800 mb-4">Registration Complete 🎉</h2>
+                    <p class="text-lg text-gray-700 mb-6">Your registration is successful. Here is your unique Voter Receipt.</p>
+                    
+                    <div class="bg-white p-6 rounded-lg shadow-md space-y-3">
+                        <p class="text-sm text-gray-500 font-medium">Name:</p>
+                        <p class="text-xl font-bold text-blue-700" id="receipt-voter-name">Loading...</p>
+                        <p class="text-sm text-gray-500 font-medium">Aadhar Number:</p>
+                        <p class="text-xl font-bold text-blue-700" id="receipt-voter-aadhar">Loading...</p>
+                        <p class="text-sm text-gray-500 font-medium">Unique Voter Receipt No:</p>
+                        <p class="text-2xl font-extrabold text-red-600 tracking-wider" id="receipt-voter-code">Loading...</p>
+                    </div>
+
+                    <p class="text-sm text-gray-600 mt-6 font-semibold">Please note this number for the next step. You will need it to verify your identity before voting.</p>
+                </div>
+                <button onclick="app.goToPage(4)" class="mt-8 w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition duration-300 shadow-md">
+                    Proceed to Voting
+                </button>
+            </section>
+
+            <section id="page-4-id-verify" data-page="4" class="page-content hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Voter Receipt Verification</h2>
+                <div class="bg-yellow-50 p-6 rounded-xl shadow-inner mb-6 text-center">
+                    <p class="text-lg font-medium text-gray-700">Please enter the **Unique Voter Receipt Number** that was provided to you.</p>
+                    <p class="text-sm text-gray-500 mt-2">This is an additional security measure.</p>
+                </div>
+                
+                <form id="id-verify-form" class="space-y-4">
+                    <div class="space-y-2">
+                        <label for="voter-receipt-code" class="block text-sm font-medium text-gray-700">Voter Receipt Number (8 digits)</label>
+                        <input type="text" id="voter-receipt-code" required maxlength="8" pattern="\d{8}" class="w-full p-3 border border-gray-300 rounded-lg text-center font-mono text-xl focus:ring-blue-500 focus:border-blue-500" placeholder="e.g. 12345678">
+                    </div>
+                    <p id="id-verify-message" class="text-center text-red-600 font-medium hidden">❌ Invalid code. Please try again.</p>
+                    <button type="button" onclick="app.verifyVoterId()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition duration-300 shadow-lg">
+                        Verify Code
+                    </button>
+                </form>
+
+                <button onclick="app.goToPage(3)" class="mt-6 w-full text-gray-600 py-2 rounded-xl font-semibold hover:bg-gray-50 transition duration-300">
+                    Back to Receipt
+                </button>
+            </section>
+
+            <section id="page-5-verify" data-page="5" class="page-content hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Voter Verification: Biometric Check</h2>
+                
+                <div class="voter-info-container bg-blue-50 p-6 rounded-xl shadow-inner mb-6">
+                    <div class="flex items-center space-x-4 mb-4">
+                        <div class="flex-shrink-0">
+                            <img src="https://placehold.co/80x80/2563EB/ffffff?text=Voter" alt="Voter Photo" class="w-20 h-20 rounded-full border-4 border-blue-400 object-cover">
+                        </div>
+                        <div class="flex-grow">
+                            <p class="text-xl font-bold text-blue-800" id="verify-voter-name">Name: Loading...</p>
+                            <p class="text-sm text-gray-600" id="verify-voter-aadhar">Aadhar: XXXX XXXX XXXX</p>
+                            <p class="text-sm text-gray-600" id="verify-voter-age">Age: 00</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    
+                    <div class="bg-gray-800 p-4 rounded-xl text-center shadow-md">
+                        <p class="text-lg font-semibold text-white mb-3">Face Recognition Scan</p>
+                        
+                        <div class="relative w-full aspect-square bg-black mx-auto mb-4 rounded-lg overflow-hidden border-4 border-gray-700">
+                            <video id="camera-feed" class="w-full h-full object-cover" autoplay playsinline></video>
+                            <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                <div id="face-scan-pulse" class="w-3/4 h-3/4 border-4 border-dashed border-red-500 rounded-full animate-pulse-ring opacity-75"></div>
+                            </div>
+                        </div>
+                        
+                        <canvas id="capture-canvas" class="hidden"></canvas> 
+                        <p id="face-scan-status" class="text-sm text-yellow-400 font-medium mb-4">Camera Initializing...</p>
+                        
+                        <button id="face-scan-button" onclick="app.captureAndVerify()" class="w-full bg-red-600 text-white py-3 rounded-xl font-semibold hover:bg-red-700 transition duration-300 shadow-lg" disabled>
+                            Capture & Verify Face
+                        </button>
+                    </div>
+
+                    <div class="bg-blue-900 p-4 rounded-xl text-center shadow-md flex flex-col justify-between">
+                        <p class="text-lg font-semibold text-white mb-3">Fingerprint Authentication</p>
+                        
+                        <div id="fingerprint-area" class="relative mx-auto my-4 w-32 h-32 flex items-center justify-center bg-gray-700 rounded-full shadow-lg">
+                            <svg id="fingerprint-icon" class="w-16 h-16 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.077 6.304-3.5 6.304-2.423 0-3.5-2.787-3.5-6.304m7 0c0 3.517 1.077 6.304 3.5 6.304 2.423 0 3.5-2.787 3.5-6.304m-7 0a7 7 0 01-7 7h14a7 7 0 01-7-7zM7 11c0-2.209 1.791-4 4-4s4 1.791 4 4m-4 0v-4"></path>
+                            </svg>
+                        </div>
+
+                        <p id="fingerprint-status" class="text-sm text-blue-300 font-medium mb-4">Press to scan your finger.</p>
+                        
+                        <button id="fingerprint-scan-button" onclick="app.simulateFingerprintScan()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition duration-300 shadow-lg">
+                            Start Fingerprint Scan
+                        </button>
+                    </div>
+                </div>
+                <div class="flex space-x-4 mt-6">
+                    <button onclick="app.goToPage(4)" class="w-1/2 bg-gray-300 text-gray-800 py-3 rounded-xl font-semibold hover:bg-gray-400 transition duration-300 shadow-md">
+                        Back
+                    </button>
+                    <button id="proceed-button" onclick="app.goToPage(6)" class="w-1/2 bg-blue-600 text-white py-3 rounded-xl font-semibold transition duration-300 shadow-md opacity-50 cursor-not-allowed" disabled>
+                        Proceed to Vote
+                    </button>
+                </div>
+            </section>
+
+            <section id="page-6-ballot" data-page="6" class="page-content hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">Official Ballot Box</h2>
+                <div class="text-right mb-4">
+                    <p class="text-sm font-medium text-gray-600">Voter: <span id="ballot-voter-name" class="font-bold text-blue-700">Voter Name</span></p>
+                </div>
+
+                <div id="parties-list" class="space-y-3">
+                </div>
+
+                <p id="vote-message" class="text-center text-red-600 font-medium mt-4 hidden">Please select a party to cast your vote.</p>
+                
+                <button id="cast-vote-button" onclick="app.castVote()" class="mt-6 w-full bg-red-700 text-white py-3 rounded-xl font-semibold hover:bg-red-800 transition duration-300 shadow-lg" disabled>
+                    Cast My Vote Now
+                </button>
+            </section>
+
+            <section id="page-7-vote-confirm" data-page="7" class="page-content hidden text-center">
+                <div class="h-64 flex flex-col justify-center items-center bg-purple-50 rounded-lg p-6 shadow-inner">
+                    <svg class="w-16 h-16 text-purple-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                    <p class="text-3xl font-extrabold text-purple-700 mb-3">Vote Recorded! ✅</p>
+                    <p class="text-xl text-gray-700">Thank you for voting. Your contribution to democracy is invaluable.</p>
+                </div>
+                <button onclick="app.goToPage(8)" class="mt-8 w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition duration-300 shadow-md">
+                    View Voting Statistics
+                </button>
+            </section>
+            
+            <section id="page-8-graph" data-page="8" class="page-content hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Voter Demographic Breakdown</h2>
+                <p class="text-center text-sm text-gray-600 mb-8">This is a simulated graph showing participation by age group.</p>
+
+                <div id="demographics-chart" class="space-y-6">
+                </div>
+
+                <button onclick="app.goToPage(9)" class="mt-10 w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition duration-300 shadow-md">
+                    Finish Session
+                </button>
+            </section>
+
+            <section id="page-9-thankyou" data-page="9" class="page-content hidden text-center">
+                <div class="h-64 flex flex-col justify-center items-center bg-blue-100 rounded-lg p-6 shadow-inner">
+                    <svg class="w-16 h-16 text-blue-600 mb-4 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    <p class="text-4xl font-extrabold text-blue-800 mb-3">Thank You! 🙏</p>
+                    <p class="text-lg text-gray-700">Your participation is vital for our democracy.</p>
+                </div>
+                <p class="mt-6 text-sm text-gray-500">You may close this window now.</p>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        // Data and State Management for the application
+        const app = {
+            currentPage: 1,
+            voterData: null,
+            hasVoted: false,
+            cameraStream: null,
+            
+            // Biometric verification states
+            isFaceVerified: false,
+            isFingerprintVerified: false,
+            
+            // Unique voter receipt code
+            voterReceiptCode: null,
+
+            // Updated party data (7 parties + NOTA)
+            parties: [
+                { id: 'BJP', name: 'Bharatiya Janata Party (BJP)', symbol: '🪷', color: 'bg-orange-500' },
+                { id: 'INC', name: 'Indian National Congress (INC)', symbol: '✋', color: 'bg-green-500' },
+                { id: 'AAP', name: 'Aam Aadmi Party (AAP)', symbol: '🧹', color: 'bg-yellow-500' },
+                { id: 'TMC', name: 'All India Trinamool Congress (TMC)', symbol: '🎋', color: 'bg-teal-500' },
+                { id: 'BSP', name: 'Bahujan Samaj Party (BSP)', symbol: '🐘', color: 'bg-blue-500' },
+                { id: 'CPI(M)', name: 'Communist Party of India (Marxist) (CPI(M))', symbol: '⚒️', color: 'bg-red-700' },
+                { id: 'NCP', name: 'Nationalist Congress Party (NCP)', symbol: '⏰', color: 'bg-purple-500' },
+                { id: 'NOTA', name: 'None of the Above (NOTA)', symbol: '🚫', color: 'bg-gray-400' }
+            ],
+            selectedParty: null,
+            
+            // Simulated Demographic Data for the graph
+            demographics: {
+                '18-25 Years': 250,
+                '26-50 Years': 450, 
+                '51+ Years': 300 
+            },
+            
+            // Utility function to show the correct page and hide others
+            goToPage(pageNumber) {
+                // Stop camera if navigating away from Page 5
+                if (this.currentPage === 5 && pageNumber !== 5) {
+                    this.stopCamera();
+                }
+
+                this.currentPage = pageNumber;
+                const pages = document.querySelectorAll('.page-content');
+                
+                pages.forEach(page => {
+                    if (parseInt(page.dataset.page) === pageNumber) {
+                        page.classList.remove('hidden');
+                    } else {
+                        page.classList.add('hidden');
+                    }
+                });
+
+                // Run specific logic for certain pages
+                switch (pageNumber) {
+                    case 1:
+                        this.resetAppState();
+                        break;
+                    case 2:
+                        this.resetAuthForms();
+                        break;
+                    case 3:
+                        this.generateReceipt();
+                        break;
+                    case 4:
+                        this.resetReceiptForm();
+                        break;
+                    case 5:
+                        this.updateVoterVerificationPage();
+                        this.startCamera();
+                        break;
+                    case 6:
+                        this.renderBallotBox();
+                        break;
+                    case 8:
+                        this.renderDemographicsChart();
+                        break;
+                }
+                
+                // Scroll to the top of the container
+                document.getElementById('app-container').scrollTop = 0;
+            },
+            
+            // Resets all app state for a new session
+            resetAppState() {
+                this.voterData = null;
+                this.hasVoted = false;
+                this.isFaceVerified = false;
+                this.isFingerprintVerified = false;
+                this.voterReceiptCode = null;
+                this.selectedParty = null;
+            },
+
+            // Resets the authentication forms
+            resetAuthForms() {
+                document.getElementById('signup-form').reset();
+                document.getElementById('login-form').reset();
+                document.getElementById('auth-options').classList.remove('hidden');
+                document.getElementById('signup-form').classList.add('hidden');
+                document.getElementById('login-form').classList.add('hidden');
+                document.getElementById('otp-section').classList.add('hidden');
+                document.getElementById('get-otp-button').classList.remove('hidden');
+                document.getElementById('verify-otp-button').classList.add('hidden');
+            },
+
+            // New function to show/hide authentication forms
+            showAuthForm(formType) {
+                const options = document.getElementById('auth-options');
+                const signupForm = document.getElementById('signup-form');
+                const loginForm = document.getElementById('login-form');
+
+                options.classList.add('hidden');
+                signupForm.classList.add('hidden');
+                loginForm.classList.add('hidden');
+
+                if (formType === 'signup') {
+                    signupForm.classList.remove('hidden');
+                } else if (formType === 'login') {
+                    loginForm.classList.remove('hidden');
+                } else {
+                    options.classList.remove('hidden');
+                }
+            },
+
+            // Simulate Sign Up
+            simulateSignup() {
+                const name = document.getElementById('signup-voter-name').value.trim();
+                const voterId = document.getElementById('signup-voter-id').value.trim();
+                const aadhar = document.getElementById('signup-voter-aadhar').value.trim();
+                const phone = document.getElementById('signup-voter-phone').value.trim();
+                const age = parseInt(document.getElementById('signup-voter-age').value);
+
+                if (name && voterId && aadhar.length === 12 && phone.length === 10 && age >= 18) {
+                    this.voterData = { name, voterId, aadhar, phone, age };
+                    this.voterReceiptCode = Math.floor(10000000 + Math.random() * 90000000).toString(); // Generate unique 8-digit code
+                    
+                    const otpMessage = document.getElementById('signup-otp-message');
+                    otpMessage.classList.remove('hidden');
+                    
+                    setTimeout(() => {
+                        this.goToPage(3);
+                    }, 1500);
+                } else {
+                    document.getElementById('signup-form').reportValidity();
+                }
+            },
+
+            // Simulate Login
+            simulateLogin() {
+                const aadhar = document.getElementById('login-voter-aadhar').value.trim();
+                if (aadhar.length === 12) {
+                    // Simulating a static voter profile for demo purposes
+                    this.voterData = {
+                        name: 'A. P. Sharma',
+                        voterId: 'ABC1234567',
+                        aadhar: aadhar,
+                        phone: '9876543210',
+                        age: 35
+                    };
+                    document.getElementById('login-otp-message').classList.remove('hidden');
+                    document.getElementById('otp-section').classList.remove('hidden');
+                    document.getElementById('get-otp-button').classList.add('hidden');
+                    document.getElementById('verify-otp-button').classList.remove('hidden');
+                } else {
+                    document.getElementById('login-form').reportValidity();
+                }
+            },
+
+            // Verify OTP
+            verifyOtp() {
+                const otp = document.getElementById('login-otp').value;
+                if (otp === '123456') { // Static OTP for simulation
+                    this.voterReceiptCode = '12345678'; // Set a default code for logged-in users
+                    this.goToPage(4);
+                } else {
+                    alert('Invalid OTP. Please try again.');
+                }
+            },
+
+            // Generate the receipt for new voters
+            generateReceipt() {
+                if (!this.voterData) return;
+                document.getElementById('receipt-voter-name').textContent = this.voterData.name;
+                document.getElementById('receipt-voter-aadhar').textContent = this.voterData.aadhar;
+                document.getElementById('receipt-voter-code').textContent = this.voterReceiptCode;
+            },
+
+            // Reset the receipt verification form
+            resetReceiptForm() {
+                document.getElementById('voter-receipt-code').value = '';
+                document.getElementById('id-verify-message').classList.add('hidden');
+            },
+
+            // Verify the voter receipt code
+            verifyVoterId() {
+                const enteredCode = document.getElementById('voter-receipt-code').value.trim();
+                const errorMessage = document.getElementById('id-verify-message');
+
+                if (enteredCode === this.voterReceiptCode) {
+                    errorMessage.classList.add('hidden');
+                    this.goToPage(5);
+                } else {
+                    errorMessage.classList.remove('hidden');
+                }
+            },
+
+            // Update Page 5 with voter data and reset biometric states
+            updateVoterVerificationPage() {
+                if (!this.voterData) return;
+                document.getElementById('verify-voter-name').textContent = `Name: ${this.voterData.name}`;
+                document.getElementById('verify-voter-aadhar').textContent = `Aadhar: ${this.voterData.aadhar}`;
+                document.getElementById('verify-voter-age').textContent = `Age: ${this.voterData.age}`;
+                
+                this.isFaceVerified = false;
+                this.isFingerprintVerified = false;
+                this.updateBiometricState();
+
+                // Reset statuses and animations
+                document.getElementById('face-scan-status').textContent = 'Camera Initializing...';
+                document.getElementById('face-scan-pulse').classList.remove('border-green-500', 'border-red-500');
+                document.getElementById('face-scan-pulse').classList.add('border-red-500');
+
+                document.getElementById('fingerprint-status').textContent = 'Press to scan your finger.';
+                document.getElementById('fingerprint-area').classList.remove('animate-pulse-fingerprint');
+            },
+
+            // Start the camera for face recognition
+            async startCamera() {
+                const video = document.getElementById('camera-feed');
+                const status = document.getElementById('face-scan-status');
+                const button = document.getElementById('face-scan-button');
+
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    this.cameraStream = stream;
+                    video.srcObject = stream;
+                    video.onloadedmetadata = () => {
+                        video.play();
+                        status.textContent = 'Ready to scan.';
+                        button.disabled = false;
+                    };
+                } catch (err) {
+                    console.error('Error accessing camera: ', err);
+                    status.textContent = 'Error: Camera access denied or not available.';
+                    button.disabled = true;
+                }
+            },
+
+            // Stop the camera stream
+            stopCamera() {
+                if (this.cameraStream) {
+                    this.cameraStream.getTracks().forEach(track => track.stop());
+                }
+            },
+
+            // Simulate the face capture and verification
+            captureAndVerify() {
+                const status = document.getElementById('face-scan-status');
+                const pulse = document.getElementById('face-scan-pulse');
+
+                status.textContent = 'Scanning face...';
+                
+                setTimeout(() => {
+                    this.isFaceVerified = Math.random() > 0.3; // 70% success rate
+                    if (this.isFaceVerified) {
+                        status.textContent = 'Face verified successfully! ✅';
+                        pulse.classList.remove('border-red-500', 'animate-pulse-ring');
+                        pulse.classList.add('border-green-500');
+                    } else {
+                        status.textContent = 'Face verification failed. Please try again. ❌';
+                        pulse.classList.remove('border-green-500');
+                        pulse.classList.add('border-red-500');
+                    }
+                    this.updateBiometricState();
+                }, 2000);
+            },
+
+            // Simulate the fingerprint scan
+            simulateFingerprintScan() {
+                const status = document.getElementById('fingerprint-status');
+                const area = document.getElementById('fingerprint-area');
+
+                status.textContent = 'Scanning fingerprint...';
+                area.classList.add('animate-pulse-fingerprint');
+
+                setTimeout(() => {
+                    this.isFingerprintVerified = Math.random() > 0.3; // 70% success rate
+                    area.classList.remove('animate-pulse-fingerprint');
+
+                    if (this.isFingerprintVerified) {
+                        status.textContent = 'Fingerprint verified successfully! ✅';
+                    } else {
+                        status.textContent = 'Fingerprint scan failed. Please try again. ❌';
+                    }
+                    this.updateBiometricState();
+                }, 2000);
+            },
+
+            // Enable or disable the "Proceed to Vote" button based on biometric status
+            updateBiometricState() {
+                const proceedButton = document.getElementById('proceed-button');
+                if (this.isFaceVerified && this.isFingerprintVerified) {
+                    proceedButton.disabled = false;
+                    proceedButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                    proceedButton.classList.add('hover:bg-blue-700');
+                } else {
+                    proceedButton.disabled = true;
+                    proceedButton.classList.add('opacity-50', 'cursor-not-allowed');
+                    proceedButton.classList.remove('hover:bg-blue-700');
+                }
+            },
+
+            // Dynamically render the list of political parties
+            renderBallotBox() {
+                if (this.hasVoted) {
+                    document.getElementById('cast-vote-button').disabled = true;
+                    document.getElementById('vote-message').textContent = 'You have already cast your vote.';
+                    document.getElementById('vote-message').classList.remove('hidden', 'text-red-600');
+                    document.getElementById('vote-message').classList.add('text-green-600');
+                } else {
+                    document.getElementById('cast-vote-button').disabled = true;
+                    document.getElementById('vote-message').textContent = 'Please select a party to cast your vote.';
+                    document.getElementById('vote-message').classList.remove('hidden');
+                    document.getElementById('vote-message').classList.add('text-red-600');
+                }
+
+                document.getElementById('ballot-voter-name').textContent = this.voterData ? this.voterData.name : 'Unknown Voter';
+                const partiesList = document.getElementById('parties-list');
+                partiesList.innerHTML = ''; // Clear existing list
+
+                this.parties.forEach(party => {
+                    const partyCard = document.createElement('button');
+                    partyCard.className = `party-card w-full flex items-center p-4 rounded-xl shadow-md border-2 border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 ${party.color} text-white`;
+                    partyCard.setAttribute('onclick', `app.selectParty('${party.id}')`);
+                    partyCard.innerHTML = `
+                        <span class="text-3xl mr-4">${party.symbol}</span>
+                        <span class="text-lg font-semibold text-left">${party.name}</span>
+                    `;
+                    partiesList.appendChild(partyCard);
+                });
+            },
+
+            // Select a party and update the UI
+            selectParty(partyId) {
+                if (this.hasVoted) return;
+
+                this.selectedParty = this.parties.find(p => p.id === partyId);
+                const partyCards = document.querySelectorAll('.party-card');
+                
+                partyCards.forEach(card => {
+                    card.classList.remove('selected');
+                });
+                
+                // Add the 'selected' class to the clicked card
+                document.querySelector(`.party-card:nth-child(${this.parties.findIndex(p => p.id === partyId) + 1})`).classList.add('selected');
+                
+                document.getElementById('cast-vote-button').disabled = false;
+                document.getElementById('vote-message').classList.add('hidden');
+            },
+
+            // Cast the vote
+            castVote() {
+                if (this.selectedParty) {
+                    this.hasVoted = true;
+                    
+                    // Simulate updating demographics
+                    const age = this.voterData.age;
+                    let ageGroup;
+                    if (age >= 18 && age <= 25) {
+                        ageGroup = '18-25 Years';
+                    } else if (age >= 26 && age <= 50) {
+                        ageGroup = '26-50 Years';
+                    } else {
+                        ageGroup = '51+ Years';
+                    }
+                    this.demographics[ageGroup]++;
+                    
+                    this.goToPage(7);
+                } else {
+                    document.getElementById('vote-message').textContent = 'Please select a party before casting your vote.';
+                    document.getElementById('vote-message').classList.remove('hidden');
+                }
+            },
+
+            // Render the demographic bar chart
+            renderDemographicsChart() {
+                const chartContainer = document.getElementById('demographics-chart');
+                chartContainer.innerHTML = '';
+                const totalVoters = Object.values(this.demographics).reduce((a, b) => a + b, 0);
+
+                for (const ageGroup in this.demographics) {
+                    const count = this.demographics[ageGroup];
+                    const percentage = ((count / totalVoters) * 100).toFixed(1);
+                    const bar = document.createElement('div');
+                    bar.className = 'relative bg-gray-200 rounded-lg h-10';
+                    bar.innerHTML = `
+                        <div class="absolute left-0 top-0 h-full bg-blue-600 rounded-lg transition-all duration-700 ease-in-out" style="width: ${percentage}%"></div>
+                        <div class="relative flex justify-between items-center h-full px-4 text-white font-semibold">
+                            <span>${ageGroup}</span>
+                            <span>${percentage}%</span>
+                        </div>
+                    `;
+                    chartContainer.appendChild(bar);
+                }
+            }
+        };
+
+        // Initialize the app on page load
+        window.onload = () => {
+            app.goToPage(1);
+        };
+    </script>
+</body>
+</html>
